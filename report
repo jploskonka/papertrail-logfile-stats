@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+  echo "Usage: $0 log_filename"
+  exit 1
+fi
+
+base_lines=$(cat $1 | ag 'heroku/router' --nocolor | ag -v 'code=' | awk -F $'\t' '{ print $10}')
+total=$(echo "$base_lines" | wc -l)
+
+printf "%s %d\n" "Total requests: " $total
+
+echo "Number of responses per status code"
+echo "$base_lines" | awk 'match($0,/status=[0-9]+/) { print substr($0,RSTART,RLENGTH) }' | sort | uniq -c | sort -nr | awk -v "total=$total" '{ printf "%s %d (%.2f%)\n", $2, $1, ($1 / total * 100) }'
+printf "\n\n"
+
+echo "20 most 500s URLs"
+echo "$base_lines" | awk 'match($0,/status=500/) { print $0 }' | awk 'match($0,/path=.*/) { print substr($0,RSTART,RLENGTH) }' | awk '$1 !~ /(assets|favicon)/ { print $1 }' | sed 's/\?.*$//' | sort | uniq -c | sort -nr | head -n 20
+printf "\n\n"
+
+echo "20 Top requested URLs (without assets)"
+echo "$base_lines" | awk 'match($0,/path=.*/) { print substr($0,RSTART,RLENGTH) }' | awk '$1 !~ /(assets|favicon)/ { print $1 }' | sed 's/\?.*$//' | sort | uniq -c | sort -nr | head -n 20
+printf "\n\n"
+
+# TODO
+# Top IP's
+# Assets requests
+# Refactor code
+# How to use this shit
