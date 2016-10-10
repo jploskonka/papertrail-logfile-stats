@@ -6,7 +6,8 @@ then
   exit 1
 fi
 
-base_lines=$(cat $1 | ag 'heroku/router' --nocolor | ag -v 'code=' | awk -F $'\t' '{ print $10}')
+raw_file=$(cat $1 | ag 'heroku/router' --nocolor | ag -v 'code=')
+base_lines=$(echo "$raw_file" | awk -F $'\t' '{ print $10}')
 total=$(echo "$base_lines" | wc -l)
 
 printf "%s %d\n" "Total requests: " $total
@@ -23,8 +24,16 @@ echo "20 Top requested URLs (without assets)"
 echo "$base_lines" | awk 'match($0,/path=.*/) { print substr($0,RSTART,RLENGTH) }' | awk '$1 !~ /(assets|favicon)/ { print $1 }' | sed 's/\?.*$//' | sort | uniq -c | sort -nr | head -n 20
 printf "\n\n"
 
+echo "20 Top IPs"
+echo "$raw_file" | awk '{ print $6 }' | sort | uniq -c | sort -r | head -n 20
+printf "\n\n"
+
+echo "Top 20 assets requests"
+echo "$base_lines" | awk 'match($0,/path=.*assets.*/) { print substr($0,RSTART,RLENGTH) }' | awk '{ print $1 }' | sort | uniq -c | sort -r | head -n 20
+printf "\n\n"
+
 # TODO
-# Top IP's
-# Assets requests
+# Review data correctness
 # Refactor code
+# Hourly stats
 # How to use this shit
