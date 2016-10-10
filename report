@@ -6,34 +6,57 @@ then
   exit 1
 fi
 
+# TODO Handle bad requests (code=XX)
 raw_file=$(cat $1 | ag 'heroku/router' --nocolor | ag -v 'code=')
 base_lines=$(echo "$raw_file" | awk -F $'\t' '{ print $10}')
-total=$(echo "$base_lines" | wc -l)
 
-printf "%s %d\n" "Total requests: " $total
+# TODO Handle entries with NF != 11
+echo "$base_lines" | gawk 'NF == 11 \
+  {
+    match($0, /status=([0-9]+)/, status)
+    status_code = status[1]
+    match($0, /path="([^\?"]+)/, path_matched)
+    path = path_matched[1]
 
-echo "Number of responses per status code"
-echo "$base_lines" | awk 'match($0,/status=[0-9]+/) { print substr($0,RSTART,RLENGTH) }' | sort | uniq -c | sort -nr | awk -v "total=$total" '{ printf "%s %d (%.2f%)\n", $2, $1, ($1 / total * 100) }'
-printf "\n\n"
+    if(status_code == 500) {
+      STATUS_500[path]++
+    }
 
-echo "20 most 500s URLs"
-echo "$base_lines" | awk 'match($0,/status=500/) { print $0 }' | awk 'match($0,/path=.*/) { print substr($0,RSTART,RLENGTH) }' | awk '$1 !~ /(assets|favicon)/ { print $1 }' | sed 's/\?.*$//' | sort | uniq -c | sort -nr | head -n 20
-printf "\n\n"
+    if(path !~ /assets|favicon/) {
+      REQS[path]++
+    }
 
-echo "20 Top requested URLs (without assets)"
-echo "$base_lines" | awk 'match($0,/path=.*/) { print substr($0,RSTART,RLENGTH) }' | awk '$1 !~ /(assets|favicon)/ { print $1 }' | sed 's/\?.*$//' | sort | uniq -c | sort -nr | head -n 20
-printf "\n\n"
+    TOTAL++
+    STATUS_CODES[status_code]++
+  }
+  END {
+    printf("%s: %d\n\n", "Total requests", TOTAL)
 
-echo "20 Top IPs"
-echo "$raw_file" | awk '{ print $6 }' | sort | uniq -c | sort -r | head -n 20
-printf "\n\n"
+    printf("%s\n","***REMOVED*** " )
+    for(x in STATUS_CODES) {
+      percentage = STATUS_CODES[x] / TOTAL * 100
+      printf("%s: %d (%.2f%)\n", x, STATUS_CODES[x], percentage)
+    }
 
-echo "Top 20 assets requests"
-echo "$base_lines" | awk 'match($0,/path=.*assets.*/) { print substr($0,RSTART,RLENGTH) }' | awk '{ print $1 }' | sort | uniq -c | sort -r | head -n 20
-printf "\n\n"
+    # Sort arrays by values descending
+    PROCINFO["sorted_in"] = "@val_num_desc"
+
+    printf("\n%s\n","***REMOVED***" )
+    i = 1; for(k in STATUS_500) {
+      print STATUS_500[k] ": " k
+
+      i++; if ( i == 10 ) { break }
+    }
+
+    printf("\n%s\n","***REMOVED***" )
+    i = 1; for(k in REQS) {
+      print REQS[k] ": " k
+
+      i++; if ( i == 20 ) { break }
+    }
+  }'
 
 # TODO
-# Review data correctness
-# Refactor code
-# Hourly stats
+# Top IPs
+# Top assets requests
 # How to use this shit
