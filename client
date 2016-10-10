@@ -1,0 +1,29 @@
+#!/usr/bin/ruby
+
+require "open-uri"
+require "json"
+require "zlib"
+
+if ARGV.length == 0
+  puts "Usage: #{$0} date"
+  exit 1
+end
+
+DATE = ARGV[0]
+
+PAPERTRAIL_TOKEN = "***REMOVED***"
+PAPERTRAIL_URL   = "https://papertrailapp.com/api/v1/archives.json"
+
+archives = open(PAPERTRAIL_URL, "X-Papertrail-Token" => PAPERTRAIL_TOKEN) { |f| f.read }
+
+archives_json = JSON.parse(archives)
+archive       = archives_json.select { |x| x["filename"] == "#{DATE}.tsv.gz" }
+
+download_url = archive.first["_links"]["download"]["href"]
+
+open("log_files/#{DATE}.tsv", "w") do |local_file|
+  open(download_url, "X-Papertrail-Token" => PAPERTRAIL_TOKEN) do |remote_file|
+    local_file.write(Zlib::GzipReader.new(remote_file).read)
+  end
+end
+
