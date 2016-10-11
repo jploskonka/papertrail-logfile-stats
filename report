@@ -5,6 +5,7 @@ then
   echo "Usage: $0 date"
   exit 1
 fi
+mkdir -p log_files
 filename="log_files/$1.tsv"
 
 if [ ! -f "$filename" ]
@@ -20,7 +21,7 @@ echo "Generating report."
 raw_file=$(cat $filename | ag 'heroku/router' --nocolor | ag -v 'code=')
 
 # TODO Handle entries with NF != 20
-echo "$raw_file" | gawk 'NF == 20\
+echo "$raw_file" | awk 'NF == 20\
   {
     match($0, /status=([0-9]+)/, status)
     status_code = status[1]
