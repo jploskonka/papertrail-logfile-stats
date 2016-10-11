@@ -2,12 +2,22 @@
 
 if [ -z "$1" ]
 then
-  echo "Usage: $0 log_filename"
+  echo "Usage: $0 date"
   exit 1
 fi
+filename="log_files/$1.tsv"
+
+if [ ! -f "$filename" ]
+then
+  echo "Downloading log file..."
+  ./client $1
+  echo "Log file downloaded."
+fi
+
+echo "Generating report."
 
 # TODO Handle bad requests (code=XX)
-raw_file=$(cat $1 | ag 'heroku/router' --nocolor | ag -v 'code=')
+raw_file=$(cat $filename | ag 'heroku/router' --nocolor | ag -v 'code=')
 base_lines=$(echo "$raw_file" | awk -F $'\t' '{ print $10}')
 
 # TODO Handle entries with NF != 11
