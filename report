@@ -18,15 +18,17 @@ echo "Generating report."
 
 # TODO Handle bad requests (code=XX)
 raw_file=$(cat $filename | ag 'heroku/router' --nocolor | ag -v 'code=')
-base_lines=$(echo "$raw_file" | awk -F $'\t' '{ print $10}')
 
-# TODO Handle entries with NF != 11
-echo "$base_lines" | gawk 'NF == 11 \
+# TODO Handle entries with NF != 20
+echo "$raw_file" | gawk 'NF == 20\
   {
     match($0, /status=([0-9]+)/, status)
     status_code = status[1]
     match($0, /path="([^\?"]+)/, path_matched)
     path = path_matched[1]
+    ip = $6
+
+    IPS_REQ[ip]++
 
     if(status_code == 500) {
       STATUS_500[path]++
@@ -34,6 +36,10 @@ echo "$base_lines" | gawk 'NF == 11 \
 
     if(path !~ /assets|favicon/) {
       REQS[path]++
+    }
+
+    if(path ~ /assets|favicon/) {
+      ASSET_REQS[path]++
     }
 
     TOTAL++
@@ -64,9 +70,18 @@ echo "$base_lines" | gawk 'NF == 11 \
 
       i++; if ( i == 20 ) { break }
     }
-  }'
 
-# TODO
-# Top IPs
-# Top assets requests
-# How to use this shit
+    printf("\n%s\n","***REMOVED***" )
+    i = 1; for(k in IPS_REQ) {
+      print IPS_REQ[k] ": " k
+
+      i++; if ( i == 20 ) { break }
+    }
+
+    printf("\n%s\n","***REMOVED***" )
+    i = 1; for(k in ASSET_REQS) {
+      print ASSET_REQS[k] ": " k
+
+      i++; if ( i == 20 ) { break }
+    }
+  }'
