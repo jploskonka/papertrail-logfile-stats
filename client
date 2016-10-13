@@ -11,7 +11,7 @@ end
 
 DATE = ARGV[0]
 
-PAPERTRAIL_TOKEN = "***REMOVED***"
+PAPERTRAIL_TOKEN = File.read(".token")
 PAPERTRAIL_URL   = "https://papertrailapp.com/api/v1/archives.json"
 
 archives = open(PAPERTRAIL_URL, "X-Papertrail-Token" => PAPERTRAIL_TOKEN) { |f| f.read }

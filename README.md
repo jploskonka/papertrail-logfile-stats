@@ -1,6 +1,15 @@
 # Logfile report
 Simple command line report based on logfile from one day.
 
+## Papertrail token
+In order for `client` to be able to get files from Papertrail it needs to have
+correct API token. You can get it from Papertrail dashboard. Then just put it in
+`.token` file in root directory. For example:
+
+***REMOVED***
+echo "YOUR_TOKEN" > .token
+***REMOVED***
+
 ## Usage
 Just use it like:
 ***REMOVED***
