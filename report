@@ -44,6 +44,7 @@ cat $filename | awk '
   match($0, /status=([0-9]+)/, status)   { STATUS[status[1]]++ }
   match($0, /status=500/)                { STATUS_500[_path]++ }
   match(_path, /\/(assets\/|favicon\.)/) { ASSET_REQ[_path]++ }
+  match($0, /host=([^ ]+)/, host)        { HOSTNAME[host[1]]++ }
 
   {
     # I have no idea how to use negative lookahead regexp with match function
@@ -67,4 +68,5 @@ cat $filename | awk '
     print_report("Top requested urls (except assets):", REQ)
     print_report("Top requested assets:", ASSET_REQ)
     print_report("Top IPs", IP_REQ)
+    print_report("Top hostname", HOSTNAME)
   }'
