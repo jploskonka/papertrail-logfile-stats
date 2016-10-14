@@ -25,10 +25,13 @@ cat $filename | awk '
   # OMG, awk has functions!
   function print_report(headline, data)
   {
+    total=0
+    # Calculate total requests for data set
+    for(key in data) { total+=data[key] }
+
     printf("\n%s\n", headline)
     i = 0; for(key in data) {
-      # TODO calculate total per data set
-      percentage = data[key] / LOCAL_3 * 100
+      percentage = data[key] / total * 100
       printf("(%.2f%) %d: %s\n", percentage, data[key], key)
 
       i++; if(i == 20) { break }
@@ -51,6 +54,7 @@ cat $filename | awk '
   END {
     # Sort associative arrays by values descending
     PROCINFO["sorted_in"] = "@val_num_desc"
+
     print "App requests: " LOCAL_3 ", Syslog: " SYSLOG ", Other: " LOCAL_7
 
     print_report("# of requests per status code:", STATUS)
