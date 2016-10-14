@@ -34,7 +34,7 @@ cat $filename | awk '
       percentage = data[key] / total * 100
       printf("(%.2f%) %d: %s\n", percentage, data[key], key)
 
-      i++; if(i == 20) { break }
+      i++; if(i == 10) { break }
     }
   }
   match($0, /path="([^\?"]+)/, path_raw) { _path = path_raw[1] }
