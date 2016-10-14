@@ -6,20 +6,20 @@ In order for `client` to be able to get files from Papertrail it needs to have
 correct API token. You can get it from Papertrail dashboard. Then just put it in
 `.token` file in root directory. For example:
 
-***REMOVED***
+```
 echo "YOUR_TOKEN" > .token
-***REMOVED***
+```
 
 ## Usage
 Just use it like:
-***REMOVED***
+```
 ./report date
-***REMOVED***
+```
 Where date is day from which you want to generate report in YYYY-MM-DD format.
 For example:
-***REMOVED***
+```
 ./report 2016-10-10
-***REMOVED***
+```
 
 ## How it works
 When running script for the first time with day it'll download log archive from
@@ -35,95 +35,3 @@ getting file there's simple report generated with awk.
   filtered out right now. It's `~3000-4000` requests per day.
 - requests with space in value of one of the parameters are filtered out. It's
   `~200` requests per day.
-
-***REMOVED******REMOVED***:
-***REMOVED***
-***REMOVED***
-
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
