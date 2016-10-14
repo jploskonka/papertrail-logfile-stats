@@ -53,8 +53,8 @@ cat $filename | awk '
     PROCINFO["sorted_in"] = "@val_num_desc"
     print "App requests: " LOCAL_3 ", Syslog: " SYSLOG ", Other: " LOCAL_7
 
-    print_report("***REMOVED***", STATUS)
-    print_report("***REMOVED***", STATUS_500)
+    print_report("# of requests per status code:", STATUS)
+    print_report("URLs with most 500s:", STATUS_500)
     print_report("Top requested urls (except assets):", REQ)
     print_report("Top requested assets:", ASSET_REQ)
     print_report("Top IPs", IP_REQ)
