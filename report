@@ -17,72 +17,56 @@ fi
 
 echo "Generating report."
 
-# TODO Handle bad requests (code=XX)
-raw_file=$(cat $filename | ag 'heroku/router' --nocolor | ag -v 'code=')
+cat $filename | awk '
+  $7 ~ /Syslog/ { SYSLOG++ }
+  $7 ~ /Local3/ { LOCAL_3++ }
+  $7 ~ /Local7/ { LOCAL_7++ }
 
-# TODO Handle entries with NF != 20
-echo "$raw_file" | awk 'NF == 20\
+  # OMG, awk has functions!
+  function print_report(headline, data)
   {
-    match($0, /status=([0-9]+)/, status)
-    status_code = status[1]
-    match($0, /path="([^\?"]+)/, path_matched)
-    path = path_matched[1]
-    ip = $6
+    total=0
+    # Calculate total requests for data set
+    for(key in data) { total+=data[key] }
 
-    IPS_REQ[ip]++
+    printf("\n%s\n", headline)
+    i = 0; for(key in data) {
+      percentage = data[key] / total * 100
+      printf("(%.2f%) %d: %s\n", percentage, data[key], key)
 
-    if(status_code == 500) {
-      STATUS_500[path]++
+      i++; if(i == 10) { break }
     }
-
-    if(path !~ /assets|favicon/) {
-      REQS[path]++
-    }
-
-    if(path ~ /assets|favicon/) {
-      ASSET_REQS[path]++
-    }
-
-    TOTAL++
-    STATUS_CODES[status_code]++
   }
+  match($0, /path="([^\?"]+)/, path_raw) { _path = path_raw[1] }
+
+  match($0, /method=HEAD.*path="\/"/)    { HEAD_ROOT++; next }
+
+  match($0, /status=([0-9]+)/, status)   { STATUS[status[1]]++ }
+  match($0, /status=500/)                { STATUS_500[_path]++ }
+  match(_path, /\/(assets\/|favicon\.)/) { ASSET_REQ[_path]++ }
+  match($0, /host=([^ ]+)/, host)        { HOSTNAME[host[1]]++ }
+
+  {
+    # I have no idea how to use negative lookahead regexp with match function
+    if(_path !~ /\/(assets\/|favicon\.)/) { REQ[_path]++ }
+
+    # $6 -> IP address
+    IP_REQ[$6]++
+  }
+
   END {
-    printf("%s: %d\n\n", "Total requests", TOTAL)
-
-    printf("%s\n","***REMOVED*** " )
-    for(x in STATUS_CODES) {
-      percentage = STATUS_CODES[x] / TOTAL * 100
-      printf("%s: %d (%.2f%)\n", x, STATUS_CODES[x], percentage)
-    }
-
-    # Sort arrays by values descending
+    # Sort associative arrays by values descending
     PROCINFO["sorted_in"] = "@val_num_desc"
 
-    printf("\n%s\n","***REMOVED***" )
-    i = 1; for(k in STATUS_500) {
-      print STATUS_500[k] ": " k
+    print "App requests: " LOCAL_3
+    print "Syslog: " SYSLOG
+    print "Other: " LOCAL_7
+    print "HEAD \"/\" requests: " HEAD_ROOT
 
-      i++; if ( i == 10 ) { break }
-    }
-
-    printf("\n%s\n","***REMOVED***" )
-    i = 1; for(k in REQS) {
-      print REQS[k] ": " k
-
-      i++; if ( i == 20 ) { break }
-    }
-
-    printf("\n%s\n","***REMOVED***" )
-    i = 1; for(k in IPS_REQ) {
-      print IPS_REQ[k] ": " k
-
-      i++; if ( i == 20 ) { break }
-    }
-
-    printf("\n%s\n","***REMOVED***" )
-    i = 1; for(k in ASSET_REQS) {
-      print ASSET_REQS[k] ": " k
-
-      i++; if ( i == 20 ) { break }
-    }
+    print_report("# of requests per status code:", STATUS)
+    print_report("URLs with most 500s:", STATUS_500)
+    print_report("Top requested urls (except assets):", REQ)
+    print_report("Top requested assets:", ASSET_REQ)
+    print_report("Top IPs", IP_REQ)
+    print_report("Top hostname", HOSTNAME)
   }'
