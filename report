@@ -19,7 +19,8 @@ echo "Generating report."
 
 cat $filename | awk '
   $7 ~ /Syslog/ { SYSLOG++ }
-  $7 ~ /Local3/ { LOCAL_3++ }
+  $7 ~ /Local3/ && $10 ~ /at=info/  { LOCAL_3_OK++ }
+  $7 ~ /Local3/ && $10 ~ /at=error/ { LOCAL_3_ERR++ }
   $7 ~ /Local7/ { LOCAL_7++ }
 
   # OMG, awk has functions!
@@ -58,7 +59,7 @@ cat $filename | awk '
     # Sort associative arrays by values descending
     PROCINFO["sorted_in"] = "@val_num_desc"
 
-    print "App requests: " LOCAL_3
+    print "App requests (success/errors): " LOCAL_3_OK "/" LOCAL_3_ERR
     print "Syslog: " SYSLOG
     print "Other: " LOCAL_7
     print "HEAD \"/\" requests: " HEAD_ROOT
