@@ -17,7 +17,7 @@ fi
 
 echo "Generating report."
 
-cat $filename | awk '
+cat $filename | ag $APP_NAME | awk '
   $7 ~ /Syslog/ { SYSLOG++ }
   $7 ~ /Local3/ && $10 ~ /at=info/  { LOCAL_3_OK++ }
   $7 ~ /Local3/ && $10 ~ /at=error/ { LOCAL_3_ERR++ }
